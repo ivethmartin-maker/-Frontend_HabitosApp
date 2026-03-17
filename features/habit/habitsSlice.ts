@@ -1,61 +1,66 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { fetchHabits } from "./habitsAPI";
-//type Habit ={
-export type Habit ={
-
+import { fetchHabits, markAsDone } from "./habitsAPI";
+type Habit = {
     _id: string;
     title: string;
     description: string;
     createdAt: string;
+    days: number;
+    lastDone: Date;
+    lastUpdate: Date;
 }
 
 type HabitState = {
-    habits: Habit [];
-    // Agregar loading
-    loading: boolean;
-    error: string | null;
+    habits: Habit[],
+    status: Record<string, "idle" | "loading" | "success" | "failed">,
+    error: Record<string, string | null>;
 }
 
 const initialState: HabitState = {
     habits: [],
-    // por agregar loading
-    loading: false,
-    error: null,
+    status: {},
+    error: {},
+}
+type markAsDoneThunkParmas = {
+    habitId: string, 
 }
 export const fetchHabitsThunk = createAsyncThunk("habit/fetchHabits", async () => {
     return await fetchHabits();
-})
+});
+
+export const markAsDoneThunk = createAsyncThunk("habit/markAsDone", async ({habitId}:markAsDoneThunkParmas, { rejectWithValue }) => {
+    
+    const responseJson = await markAsDone(habitId);
+    console.log(responseJson);
+    if (responseJson.message.toString() === "Habit marked as done") {
+        return ("Habito marcado como hecho");
+    }else if(responseJson.message.toString() === "Habit restarted"){
+        return rejectWithValue(responseJson.message);
+    }else{
+        return rejectWithValue("Failed to mark habit as done");
+    }
+    
+});
 const habitSlice = createSlice({
-    name: "habit",
+    name: "habits",
     initialState,
-    reducers:{
+    reducers: {
         addHabits: (state, action) => {
             state.habits = action.payload;
-        },
-        addHabit: (state, action) => {
-            state.habits.push(action.payload);
-        },
-        removehabit: (state, action) => {
-            state.habits =state.habits.filter(habit => habit._id !== action.payload);
         }
     },
-    extraReducers: (builder) =>{
-        builder
-        // Mientras la petición está en curso
-            .addCase(fetchHabitsThunk.pending, (state) => {
-                state.loading = true;
-            })
-            .addCase(fetchHabitsThunk.fulfilled, (state, action) => {
-                state.loading = false;
-                state.habits = action.payload;
-            })
-                //Si hay un error
-            .addCase(fetchHabitsThunk.rejected, (state) => {
-                state.loading = false;
-                state.error = "Error al cargar los hábitos";
-        });
+    extraReducers: (builder) => {
+        builder.addCase(fetchHabitsThunk.fulfilled, (state, action) => {
+            state.habits = action.payload;
+        }).addCase(markAsDoneThunk.fulfilled, (state, action) => {
+            state.status[action.meta.arg.habitId] = "success";
+            state.error[action.meta.arg.habitId] = null;
+        }).addCase(markAsDoneThunk.rejected, (state, action) => {  
+            state.status[action.meta.arg.habitId] = "failed";
+            state.error[action.meta.arg.habitId] = action.payload as string;
+        })
     }
 });
 
-export const { addHabits, addHabit, removehabit } =habitSlice.actions;
+export const { addHabits} = habitSlice.actions;
 export default habitSlice.reducer;

@@ -4,11 +4,11 @@ import { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchHabitsThunk } from "@/features/habit/habitsSlice";
 import { AppState, AppDispatch } from "../Redux/store";
-import { Habits } from "../app/habits"; // <-- Importamos el nuevo componente
+import Habits from "../app/habits";
 
 export default function Home() {
   const dispatch = useDispatch<AppDispatch>();
-  const { habits, loading } = useSelector((state: AppState) => state.habit);
+  const { habits,} = useSelector((state: AppState) => state.habit);
 
   useEffect(() => {
     dispatch(fetchHabitsThunk());
@@ -27,7 +27,7 @@ export default function Home() {
         />
 
         {/* --- Renderizamos el componente Habits y le pasamos los datos --- */}
-        <Habits habits={habits} loading={loading} />
+        <Habits habits={habits} />
         
       </main>
     </div>
