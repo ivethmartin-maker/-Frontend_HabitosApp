@@ -1,5 +1,6 @@
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
 export const fetchHabits = async (token:string) => {
-    const response = await fetch("http://localhost:3002/habits", {
+    const response = await fetch(`${API_URL}/api/habits`, {
         headers: {Authorization: 'Bearer '+token }
     });
     if (!response.ok) {
@@ -9,7 +10,7 @@ export const fetchHabits = async (token:string) => {
 };
 
 export const markAsDone = async (habitId: string, token: string) => {
-    const response = await fetch(`http://localhost:3002/habits/markasdone/${habitId}`, {
+    const response = await fetch(`${API_URL}/api/habits/markasdone/${habitId}`, {
         method: "PATCH",
         headers: {Authorization: 'Bearer '+token }
     });
@@ -17,7 +18,7 @@ export const markAsDone = async (habitId: string, token: string) => {
 };
 
 export const fetchAddHabit = async (token:string, title:string, description:string) => {
-    const response = await fetch("http://localhost:3002/habits", {
+    const response = await fetch(`${API_URL}/api/habits`, {
         method: 'POST',
         headers: {Authorization: 'Bearer '+token ,
             'Content-Type': 'application/json'
@@ -28,7 +29,7 @@ export const fetchAddHabit = async (token:string, title:string, description:stri
         })
       });
     if (!response.ok) {
-        throw new Error("Failed to fetch habits");
+        throw new Error("Failed to add habit");
     }
     return response;
 };

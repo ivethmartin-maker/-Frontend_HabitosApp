@@ -17,7 +17,7 @@ type userState = {
 }
 
 const initialState: userState = {
-    user: null,
+   user: null, 
     status: "idle",
     error: null,
 }
@@ -39,6 +39,8 @@ export const fetchLoginUserThunk = createAsyncThunk("user/fetchLoginUser", async
     if (!response.ok) {
         return rejectWithValue(responseJson.message || "Failed to login");
     } else {
+        localStorage.setItem('habitToken', responseJson.token);
+        document.cookie = `habitToken=${responseJson.token}; path=/; max-age=86400`;
         return responseJson.token; // Retorna el string del token
     }
 });
@@ -48,9 +50,10 @@ const userSlice = createSlice({
     initialState,
     reducers: {
         addUser: (state, action) => {
-            state.user = action.payload;
+            state.user = { token: action.payload };
         }
     },
+    
     extraReducers: (builder) => {
         builder
             .addCase(fetchRegisterUserThunk.fulfilled, (state, action) => {

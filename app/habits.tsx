@@ -17,11 +17,10 @@ type Habit = {
 type HabitsProps = {
     habits: Habit[];    
 }
-const handleMarkAsDone = (habitId: string, dispatch: AppDispatch,  token: string) => {
-     dispatch(markAsDoneThunk({ habitId, token }));
-    if (token) {
-        dispatch(fetchHabitsThunk(token));
-    }
+const handleMarkAsDone = async (habitId: string, dispatch: AppDispatch, token: string) => {
+    if (!token) return;
+    await dispatch(markAsDoneThunk({ habitId, token }));
+    dispatch(fetchHabitsThunk(token));
 }
 
 export default function Habits({habits}: HabitsProps) {
@@ -37,7 +36,7 @@ export default function Habits({habits}: HabitsProps) {
 
    const handleAddHabit = async () => { 
     if (title && description) {
-        const token = user ? user.toString() : '';
+       const token = user?.token || '';
         await dispatch(fetchAddHabitThunk({ token, title, description }));
         
         setTitle('');
@@ -48,6 +47,19 @@ export default function Habits({habits}: HabitsProps) {
 };
 
 return (
+    <> 
+        <div className="w-full flex justify-end mb-4 max-w-2xl mx-auto px-4">
+            <button 
+                onClick={() => {
+                    document.cookie = "habitToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+                    localStorage.removeItem('habitToken');
+                    window.location.reload();
+                }}
+                className="text-xs text-red-500 hover:underline font-medium"
+            >
+                Cerrar Sesión
+            </button>
+        </div>
         <div className="flex flex-col items-center gap-8 w-full max-w-2xl mx-auto p-4">
             
             <div className="w-full p-6 border border-zinc-200 rounded-2xl bg-white dark:bg-zinc-900 shadow-sm">
@@ -100,7 +112,7 @@ return (
                                     
                                      {/* Botón ______________*/}
                                     <button 
-                                      onClick={() => handleMarkAsDone(habit._id, dispatch, user ? user.toString() : '')}
+                                      onClick={() => handleMarkAsDone(habit._id, dispatch, user?.token || '')}
                                       disabled={habitStatus === 'loading'}
                                       className={`px-4 py-2 text-xs font-bold rounded-lg transition-all ${
                                         habitStatus === 'loading' 
@@ -135,5 +147,6 @@ return (
                 )}
             </div>
         </div>
+    </>
     );
 }
