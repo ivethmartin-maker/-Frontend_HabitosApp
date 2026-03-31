@@ -17,31 +17,31 @@ type userState = {
 }
 
 const initialState: userState = {
-   user: null, 
+    user: null, 
     status: "idle",
     error: null,
 }
 
 export const fetchRegisterUserThunk = createAsyncThunk("user/fetchRegisterUser", async ({username, password}: userThunk, {rejectWithValue}) => {
-    const response = await fetchRegisterUser(username, password);
-    const responseJson = await response.json();
-
-    if (!response.ok) {
-        return rejectWithValue("Failed to register user");
-    } else {
+    try {
+        const responseJson = await fetchRegisterUser(username, password);
         return responseJson.message;
+    } catch (error: any) {
+        return rejectWithValue(error.message || "Failed to register user");
     }
 });
 
 export const fetchLoginUserThunk = createAsyncThunk("user/fetchLoginUser", async ({username, password}: userThunk, {rejectWithValue}) => {
-    const response = await fetchLoginUser(username, password);
-    const responseJson = await response.json();
-    if (!response.ok) {
-        return rejectWithValue(responseJson.message || "Failed to login");
-    } else {
+    try {
+        const responseJson = await fetchLoginUser(username, password);
+        
+        // Guardamos el token
         localStorage.setItem('habitToken', responseJson.token);
         document.cookie = `habitToken=${responseJson.token}; path=/; max-age=86400`;
-        return responseJson.token; // Retorna el string del token
+        
+        return responseJson.token; 
+    } catch (error: any) {
+        return rejectWithValue(error.message || "Failed to login");
     }
 });
 
@@ -53,7 +53,6 @@ const userSlice = createSlice({
             state.user = { token: action.payload };
         }
     },
-    
     extraReducers: (builder) => {
         builder
             .addCase(fetchRegisterUserThunk.fulfilled, (state, action) => {
@@ -68,7 +67,6 @@ const userSlice = createSlice({
             })
             .addCase(fetchLoginUserThunk.fulfilled, (state, action) => {
                 state.status = "success";
-                // IMPORTANTE: Guardamos como objeto para que coincida con el tipo 'user'
                 state.user = { token: action.payload as string };
                 state.error = null;
             })
