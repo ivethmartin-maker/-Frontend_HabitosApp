@@ -1,7 +1,9 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
+// 1. Asegúrate de que el puerto sea el 4000 (que es el que vi en tu app.js)
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 export const fetchRegisterUser = async (username: string, password: string) => {
-    const response = await fetch(`${API_URL}/users/register`, {
+    // CAMBIO AQUÍ: Agregamos /api/auth/ antes de register
+    const response = await fetch(`${API_URL}/api/auth/register`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -16,16 +18,16 @@ export const fetchRegisterUser = async (username: string, password: string) => {
         throw new Error("Failed to register user");
     }
     
-    return response.json(); // <-- IMPORTANTE: Devolver los datos procesados
+    return response.json();
 };
 
 export const fetchLoginUser = async (username: string, password: string) => {
-    const response = await fetch(`${API_URL}/users/login`, {
+    // CAMBIO AQUÍ: Agregamos /api/auth/ antes de login
+    const response = await fetch(`${API_URL}/api/auth/login`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        // Mantenemos esto si estás manejando Cookies, si no, puedes quitarlo
         credentials: 'include', 
         body: JSON.stringify({
             "username": username,
@@ -37,5 +39,5 @@ export const fetchLoginUser = async (username: string, password: string) => {
         throw new Error("Failed to login user");
     }
 
-    return response.json(); // <-- IMPORTANTE: Aquí viene el TOKEN que necesitas
+    return response.json();
 };
